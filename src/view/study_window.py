@@ -1,15 +1,20 @@
 from PyQt5 import QtWidgets
 
+from model import deck
 
-class MainWindow(QtWidgets.QMainWindow):
 
-    def __init__(self, *argv, **kwarg):
+class StudyWindow(QtWidgets.QMainWindow):
+
+    def __init__(self, d: deck.Deck, *argv, **kwarg) -> None:
         super().__init__(*argv, **kwarg)
 
+        self._deck = d
+        self._current_card = self._deck.get_card()
         widget = QtWidgets.QWidget()
         top_layout = QtWidgets.QVBoxLayout()
-        top_layout.addWidget(QtWidgets.QLabel('question'))
-        self._answer_label = QtWidgets.QLabel('answer')
+        self._question_label = QtWidgets.QLabel(self._current_card.question)
+        top_layout.addWidget(self._question_label)
+        self._answer_label = QtWidgets.QLabel(self._current_card.answer)
         top_layout.addWidget(self._answer_label)
         self._buttons = QtWidgets.QWidget()
         button_layout = QtWidgets.QHBoxLayout()
@@ -29,18 +34,15 @@ class MainWindow(QtWidgets.QMainWindow):
         widget.setLayout(top_layout)
         self.setCentralWidget(widget)
 
-    def show_answer(self):
+    def show_answer(self) -> None:
         self._show_button.hide()
         self._buttons.show()
         self._answer_label.show()
 
-    def next_question(self):
+    def next_question(self) -> None:
         self._buttons.hide()
         self._show_button.show()
         self._answer_label.hide()
-
-
-app = QtWidgets.QApplication([])
-window = MainWindow()
-window.show()
-app.exec()
+        self._current_card = self._deck.get_card()
+        self._question_label.setText(self._current_card.question)
+        self._answer_label.setText(self._current_card.answer)
