@@ -1,5 +1,8 @@
-class Card:
+import dataclasses
 
-    def __init__(self, question: str, answer: str) -> None:
-        self.question = question
-        self.answer = answer
+
+@dataclasses.dataclass
+class Card:
+    identifier: int
+    question: str
+    answer: str
