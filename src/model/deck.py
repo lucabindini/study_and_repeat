@@ -13,7 +13,7 @@ class Deck:
         self._current_id = 0
         self.last_study_day = datetime.date.today()
         self._cards_strengths = {}
-        self._queues = []
+        self._queues = [collections.deque()]
         self._new_queue = collections.deque()
         self._is_new = True
 
@@ -33,7 +33,11 @@ class Deck:
 
     def calculate_delay(self, correctness: bool) -> None:
         c = (self._new_queue if self._is_new else self._queues[0]).popleft()
-        self._is_new = not self._is_new
+
+        # to avoid asking the same question twice in a row
+        if self._queues[0]:
+            self._is_new = not self._is_new
+
         if correctness:
             while len(self._queues) <= self._cards_strengths[c.identifier]:
                 self._queues.append(collections.deque())
@@ -51,7 +55,7 @@ class Deck:
 def load_deck(filepath: str) -> Deck:
     with open(filepath, 'rb') as f:
         d: Deck = pickle.load(f)
-    n = (datetime.date.today() - d.last_study_day).days
+    n = min((datetime.date.today() - d.last_study_day).days, len(d._queues)-1)
     for i in range(n):
         d._queues[0].extend(d._queues[i+1])
     del d._queues[1:n+1]

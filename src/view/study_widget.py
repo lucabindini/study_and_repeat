@@ -3,14 +3,13 @@ from PyQt5 import QtWidgets
 from model import deck
 
 
-class StudyWindow(QtWidgets.QMainWindow):
+class StudyWidget(QtWidgets.QWidget):
 
     def __init__(self, d: deck.Deck, *argv, **kwarg) -> None:
         super().__init__(*argv, **kwarg)
 
         self._deck = d
         self._current_card = self._deck.get_card()
-        widget = QtWidgets.QWidget()
         v_layout = QtWidgets.QVBoxLayout()
         self._question_label = QtWidgets.QLabel(self._current_card.question)
         v_layout.addWidget(self._question_label)
@@ -31,8 +30,7 @@ class StudyWindow(QtWidgets.QMainWindow):
         v_layout.addWidget(self._correctness_btns)
         self._correctness_btns.hide()
         self._answer_label.hide()
-        widget.setLayout(v_layout)
-        self.setCentralWidget(widget)
+        self.setLayout(v_layout)
 
     def show_answer(self) -> None:
         self._show_btn.hide()
