@@ -1,36 +1,50 @@
 from PyQt5 import QtWidgets
 
 from model import deck
+from view import home_widget
 
 
 class StudyWidget(QtWidgets.QWidget):
 
-    def __init__(self, d: deck.Deck, *argv, **kwarg) -> None:
-        super().__init__(*argv, **kwarg)
+    def __init__(self, d: deck.Deck, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
 
         self._deck = d
-        self._current_card = self._deck.get_card()
         v_layout = QtWidgets.QVBoxLayout()
-        self._question_label = QtWidgets.QLabel(self._current_card.question)
+        self._question_label = QtWidgets.QLabel()
         v_layout.addWidget(self._question_label)
-        self._answer_label = QtWidgets.QLabel(self._current_card.answer)
+        self._answer_label = QtWidgets.QLabel()
         v_layout.addWidget(self._answer_label)
         self._correctness_btns = QtWidgets.QWidget()
         btn_layout = QtWidgets.QHBoxLayout()
         incorrect_btn = QtWidgets.QPushButton('Incorrect')
         btn_layout.addWidget(incorrect_btn)
-        incorrect_btn.pressed.connect(lambda: self.next_question(False))
+        incorrect_btn.released.connect(lambda: self.next_question(False))
         correct_btn = QtWidgets.QPushButton('Correct')
         btn_layout.addWidget(correct_btn)
-        correct_btn.pressed.connect(lambda: self.next_question(True))
+        correct_btn.released.connect(lambda: self.next_question(True))
         self._correctness_btns.setLayout(btn_layout)
         self._show_btn = QtWidgets.QPushButton('Show answer')
-        self._show_btn.pressed.connect(self.show_answer)
+        self._show_btn.released.connect(self.show_answer)
         v_layout.addWidget(self._show_btn)
         v_layout.addWidget(self._correctness_btns)
         self._correctness_btns.hide()
         self._answer_label.hide()
         self.setLayout(v_layout)
+
+        self.window().setCentralWidget(self)
+        self.show_question()
+
+    def show_question(self) -> None:
+        try:
+            self._current_card = self._deck.get_card()
+            self._question_label.setText(self._current_card.question)
+            self._answer_label.setText(self._current_card.answer)
+        except deck.EmptyQueuesException:
+            # self.window().set_home_widget()
+            self._deck.dump()
+            print(self.window())
+            self.window().setCentralWidget(home_widget.HomeWidget())
 
     def show_answer(self) -> None:
         self._show_btn.hide()
@@ -42,6 +56,7 @@ class StudyWidget(QtWidgets.QWidget):
         self._show_btn.show()
         self._answer_label.hide()
         self._deck.calculate_delay(correctness)
-        self._current_card = self._deck.get_card()
-        self._question_label.setText(self._current_card.question)
-        self._answer_label.setText(self._current_card.answer)
+        self.show_question()
+
+    def exit(self) -> None:
+        self._deck.dump()

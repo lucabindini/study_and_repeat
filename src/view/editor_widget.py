@@ -3,10 +3,10 @@ from PyQt5 import QtWidgets
 from model import deck
 
 
-class CreateWidget(QtWidgets.QWidget):
+class EditorWidget(QtWidgets.QWidget):
 
-    def __init__(self, d: deck.Deck, *argv, **kwarg) -> None:
-        super().__init__(*argv, **kwarg)
+    def __init__(self, d: deck.Deck, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
 
         self._deck = d
         v_layout = QtWidgets.QVBoxLayout()
@@ -20,11 +20,16 @@ class CreateWidget(QtWidgets.QWidget):
         v_layout.addWidget(self._answer_edit)
         next_card_btn = QtWidgets.QPushButton('Next card')
         v_layout.addWidget(next_card_btn)
-        next_card_btn.pressed.connect(self.next_card)
+        next_card_btn.released.connect(self.next_card)
         self.setLayout(v_layout)
 
+        self.window().setCentralWidget(self)
+
     def next_card(self) -> None:
-        self._deck.add_card(self._question_edit.toPlainText(), self._answer_edit.toPlainText())
+        self._deck.add_card(self._question_edit.toPlainText(),
+                            self._answer_edit.toPlainText())
         self._question_edit.setPlainText('')
         self._answer_edit.setPlainText('')
 
+    def exit(self) -> None:
+        self._deck.dump()
