@@ -12,11 +12,11 @@ class EditorWidget(QtWidgets.QWidget):
         v_layout = QtWidgets.QVBoxLayout()
         question_label = QtWidgets.QLabel('Question:')
         v_layout.addWidget(question_label)
-        self._question_edit = QtWidgets.QPlainTextEdit()
+        self._question_edit = QtWidgets.QLineEdit()
         v_layout.addWidget(self._question_edit)
         answer_label = QtWidgets.QLabel('Answer:')
         v_layout.addWidget(answer_label)
-        self._answer_edit = QtWidgets.QPlainTextEdit()
+        self._answer_edit = QtWidgets.QTextEdit()
         v_layout.addWidget(self._answer_edit)
         next_card_btn = QtWidgets.QPushButton('Next card')
         v_layout.addWidget(next_card_btn)
@@ -26,10 +26,10 @@ class EditorWidget(QtWidgets.QWidget):
         self.window().setCentralWidget(self)
 
     def next_card(self) -> None:
-        self._deck.add_card(self._question_edit.toPlainText(),
+        self._deck.add_card(self._question_edit.text(),
                             self._answer_edit.toPlainText())
-        self._question_edit.setPlainText('')
-        self._answer_edit.setPlainText('')
+        self._question_edit.setText('')
+        self._answer_edit.setText('')
 
     def exit(self) -> None:
         self._deck.dump()

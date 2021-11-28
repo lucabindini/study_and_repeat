@@ -11,10 +11,12 @@ class StudyWidget(QtWidgets.QWidget):
 
         self._deck = d
         v_layout = QtWidgets.QVBoxLayout()
-        self._question_label = QtWidgets.QLabel()
-        v_layout.addWidget(self._question_label)
-        self._answer_label = QtWidgets.QLabel()
-        v_layout.addWidget(self._answer_label)
+        self._question_text = QtWidgets.QLineEdit()
+        self._question_text.setReadOnly(True)
+        v_layout.addWidget(self._question_text)
+        self._answer_text = QtWidgets.QTextEdit()
+        self._answer_text.setReadOnly(True)
+        v_layout.addWidget(self._answer_text)
         self._correctness_btns = QtWidgets.QWidget()
         btn_layout = QtWidgets.QHBoxLayout()
         incorrect_btn = QtWidgets.QPushButton('Incorrect')
@@ -29,7 +31,7 @@ class StudyWidget(QtWidgets.QWidget):
         v_layout.addWidget(self._show_btn)
         v_layout.addWidget(self._correctness_btns)
         self._correctness_btns.hide()
-        self._answer_label.hide()
+        self._answer_text.hide()
         self.setLayout(v_layout)
 
         self.window().setCentralWidget(self)
@@ -38,8 +40,8 @@ class StudyWidget(QtWidgets.QWidget):
     def show_question(self) -> None:
         try:
             self._current_card = self._deck.get_card()
-            self._question_label.setText(self._current_card.question)
-            self._answer_label.setText(self._current_card.answer)
+            self._question_text.setText(self._current_card.question)
+            self._answer_text.setText(self._current_card.answer)
         except deck.EmptyQueuesException:
             # self.window().set_home_widget()
             self._deck.dump()
@@ -49,12 +51,12 @@ class StudyWidget(QtWidgets.QWidget):
     def show_answer(self) -> None:
         self._show_btn.hide()
         self._correctness_btns.show()
-        self._answer_label.show()
+        self._answer_text.show()
 
     def next_question(self, correctness) -> None:
         self._correctness_btns.hide()
         self._show_btn.show()
-        self._answer_label.hide()
+        self._answer_text.hide()
         self._deck.calculate_delay(correctness)
         self.show_question()
 
