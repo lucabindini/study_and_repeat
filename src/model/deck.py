@@ -10,26 +10,41 @@ from model import card
 class Deck:
 
     def __init__(self, name: str) -> None:
-        self._name = name
-        self._cards = []
-        self._current_id = 0
+        self.name = name
+        self.cards: list[card.Card] = []
         self.last_study_day = datetime.date.today()
-        self._cards_strengths = {}
-        self._queues = [collections.deque()]
-        self._new_queue = collections.deque()
+        self._current_id = 0
+        self._cards_strengths: dict[int, int] = {}
+        self._queues: list[collections.deque[card.Card]] = [collections.deque()]
+        self._new_queue: collections.deque[card.Card] = collections.deque()
         self._is_new = True
         self._img_id = 0
         os.mkdir('decks/'+name)
         os.mkdir('decks/'+name+'/img')
 
     def add_card(self, question: str, answer: str) -> None:
-        self._cards.append(card.Card(self._current_id, question, answer))
+        self.cards.append(card.Card(self._current_id, question, answer))
         self._cards_strengths[self._current_id] = 1
-        self._new_queue.append(self._cards[-1])
+        self._new_queue.append(self.cards[-1])
         self._current_id += 1
 
+    def remove_card(self, index: int) -> None:
+        c = self.cards[index]
+        for queue in self._queues:
+            try:
+                queue.remove(c)
+                break
+            except ValueError:
+                pass
+        else:
+            self._new_queue.remove(c)
+        del self._cards_strengths[c.identifier]
+        del self.cards[index]
+
+
+
     def add_image(self, src: str) -> str:
-        dst = f'decks/{self._name}/img/' \
+        dst = f'decks/{self.name}/img/' \
             + f'{self._current_id}-{self._img_id}-{os.path.basename(src)}'
         shutil.copyfile(src, dst)
         self._img_id += 1
@@ -60,7 +75,7 @@ class Deck:
             self._queues[0].append(c)
 
     def dump(self):
-        with open('decks/'+self._name+'/deck.pickle', 'wb') as f:
+        with open('decks/'+self.name+'/deck.pickle', 'wb') as f:
             pickle.dump(self, f)
 
 
