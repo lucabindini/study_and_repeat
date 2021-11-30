@@ -1,6 +1,8 @@
 import pickle
 import datetime
 import collections
+import os
+import shutil
 
 from model import card
 
@@ -16,12 +18,22 @@ class Deck:
         self._queues = [collections.deque()]
         self._new_queue = collections.deque()
         self._is_new = True
+        self._img_id = 0
+        os.mkdir('decks/'+name)
+        os.mkdir('decks/'+name+'/img')
 
     def add_card(self, question: str, answer: str) -> None:
         self._cards.append(card.Card(self._current_id, question, answer))
         self._cards_strengths[self._current_id] = 1
         self._new_queue.append(self._cards[-1])
         self._current_id += 1
+
+    def add_image(self, src: str) -> str:
+        dst = f'decks/{self._name}/img/' \
+            + f'{self._current_id}-{self._img_id}-{os.path.basename(src)}'
+        shutil.copyfile(src, dst)
+        self._img_id += 1
+        return dst
 
     def get_card(self) -> card.Card:
         for _ in range(2):
@@ -48,7 +60,7 @@ class Deck:
             self._queues[0].append(c)
 
     def dump(self):
-        with open('decks/'+self._name+'.pickle', 'wb') as f:
+        with open('decks/'+self._name+'/deck.pickle', 'wb') as f:
             pickle.dump(self, f)
 
 

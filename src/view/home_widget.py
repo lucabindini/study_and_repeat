@@ -23,14 +23,15 @@ class HomeWidget(QtWidgets.QWidget):
 
     def create_deck(self) -> None:
         try:
-            d = deck.load_deck('decks/'+self._deck_edit.text()+'.pickle')
+            d = deck.load_deck('decks/'+self._deck_edit.text()+'/deck.pickle')
         except FileNotFoundError:
             d = deck.Deck(self._deck_edit.text())
         editor_widget.EditorWidget(d, parent=self.window())
 
     def study_deck(self) -> None:
-        study_widget.StudyWidget(deck.load_deck(
-            'decks/'+self._deck_edit.text()+'.pickle'), parent=self.window())
+        study_widget.StudyWidget(
+            deck.load_deck('decks/'+self._deck_edit.text()+'/deck.pickle'),
+            parent=self.window())
 
     def exit(self) -> None:
         pass

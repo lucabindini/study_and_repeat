@@ -43,7 +43,6 @@ class StudyWidget(QtWidgets.QWidget):
             self._question_text.setText(self._current_card.question)
             self._answer_text.setText(self._current_card.answer)
         except deck.EmptyQueuesException:
-            # self.window().set_home_widget()
             self._deck.dump()
             print(self.window())
             self.window().setCentralWidget(home_widget.HomeWidget())
