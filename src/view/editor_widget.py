@@ -1,10 +1,12 @@
-from pickle import TRUE
 from PyQt5 import QtWidgets, QtCore
 
 from model import deck
 
 
 class EditorWidget(QtWidgets.QWidget):
+
+    question_prefix = '- '
+    proportion = 8
 
     def __init__(self, d: deck.Deck, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
@@ -15,18 +17,23 @@ class EditorWidget(QtWidgets.QWidget):
         left_widget = QtWidgets.QWidget()
         left_layout = QtWidgets.QVBoxLayout()
         self._cards_list = QtWidgets.QListWidget()
-        self._cards_list.setDefaultDropAction(QtCore.Qt.MoveAction)
-        self._cards_list.setMovement(QtWidgets.QListView.Snap)
-        self._cards_list.itemSelectionChanged.connect(self.show_card)
+        self._cards_list.currentRowChanged.connect(self.show_card)
+        self._cards_list.itemPressed.connect(self.show_card)
         left_layout.addWidget(self._cards_list)
         create_remove_widget = QtWidgets.QWidget()
-        create_remove_layout = QtWidgets.QHBoxLayout()
-        remove_btn = QtWidgets.QPushButton('Remove card')
-        create_remove_layout.addWidget(remove_btn)
-        remove_btn.released.connect(self.remove_card)
+        create_remove_layout = QtWidgets.QGridLayout()
         create_btn = QtWidgets.QPushButton('Create card')
-        create_remove_layout.addWidget(create_btn)
+        create_remove_layout.addWidget(create_btn, 0, 0)
         create_btn.released.connect(self.create_card)
+        self._remove_btn = QtWidgets.QPushButton('Remove card')
+        create_remove_layout.addWidget(self._remove_btn, 1, 0)
+        self._remove_btn.released.connect(self.remove_card)
+        self._up_btn = QtWidgets.QPushButton('Up')
+        create_remove_layout.addWidget(self._up_btn, 0, 1)
+        self._up_btn.released.connect(lambda: self.move_card(True))
+        self._down_btn = QtWidgets.QPushButton('Down')
+        create_remove_layout.addWidget(self._down_btn, 1, 1)
+        self._down_btn.released.connect(lambda: self.move_card(False))
         create_remove_widget.setLayout(create_remove_layout)
         left_layout.addWidget(create_remove_widget)
         left_widget.setLayout(left_layout)
@@ -46,40 +53,71 @@ class EditorWidget(QtWidgets.QWidget):
         self._add_img_btn.released.connect(self.add_image)
         right_widget.setLayout(right_layout)
 
-        h_layout.addWidget(left_widget, 100//4)
-        h_layout.addWidget(right_widget, 100*3//4)
+        h_layout.addWidget(left_widget, 100//self.proportion)
+        h_layout.addWidget(right_widget, 100 *
+                           (self.proportion-1)//self.proportion)
         self.setLayout(h_layout)
         self.window().setCentralWidget(self)
 
-        self.disable_right()
-        self.refresh_list()
+        self.disable()
+        self._cards_list.addItems(
+            self.question_prefix + c.question
+            for i, c in enumerate(self._deck.cards))
 
-    def remove_card(self):
+    def remove_card(self) -> None:
         current_row = self._cards_list.currentRow()
+        self._cards_list.takeItem(current_row)
+        self._cards_list.setCurrentRow(self._cards_list.currentRow())
         self._cards_list.clearSelection()
         self._deck.remove_card(current_row)
-        self.disable_right()
-        self.refresh_list()
+        self.disable()
+        # TODO select next card
 
     def create_card(self) -> None:
         self._deck.add_card('', '')
-        self.refresh_list()
+        self._cards_list.addItem(self.question_prefix)
         self._cards_list.setCurrentRow(self._cards_list.count() - 1)
+        if self._cards_list.currentRow() > 0:
+            self._up_btn.setEnabled(True)
+        self._down_btn.setDisabled(True)
 
-    def refresh_list(self) -> None:
-        self._cards_list.clear()
-        self._cards_list.addItems(c.question for c in self._deck.cards)
+    def move_card(self, up: bool) -> None:
+        current_row = self._cards_list.currentRow()
+        self._deck.move_card(current_row, up)
+        item = self._cards_list.takeItem(current_row - (2*up-1))
+        self._cards_list.insertItem(self._cards_list.currentRow() + up, item)
+        self._old_select = self._cards_list.currentRow()
+        if up:
+            self._down_btn.setEnabled(True)
+            if self._cards_list.currentRow() == 0:
+                self._up_btn.setDisabled(True)
+        else:
+            self._up_btn.setEnabled(True)
+            if self._cards_list.currentRow() == self._cards_list.count() - 1:
+                self._down_btn.setDisabled(True)
 
     def show_card(self) -> None:
         try:
-            self._deck.cards[self._old_select].question = self._question_edit.text()
-            self._deck.cards[self._old_select].answer = self._answer_edit.toHtml()
+            self._deck.cards[self._old_select].question \
+                = self._question_edit.text()
+            self._deck.cards[self._old_select].answer \
+                = self._answer_edit.toHtml()
             self._cards_list.item(self._old_select).setText(
-                self._deck.cards[self._old_select].question)
+                self.question_prefix
+                + self._deck.cards[self._old_select].question)
         except TypeError:
             self._question_edit.setEnabled(True)
             self._answer_edit.setEnabled(True)
             self._add_img_btn.setEnabled(True)
+            self._remove_btn.setEnabled(True)
+        if self._cards_list.currentRow() > 0:
+            self._up_btn.setEnabled(True)
+        else:
+            self._up_btn.setDisabled(True)
+        if self._cards_list.currentRow() < self._cards_list.count() - 1:
+            self._down_btn.setEnabled(True)
+        else:
+            self._down_btn.setDisabled(True)
         self._question_edit.setText(
             self._deck.cards[self._cards_list.currentRow()].question)
         self._answer_edit.setText(
@@ -90,19 +128,29 @@ class EditorWidget(QtWidgets.QWidget):
         file_name = QtWidgets.QFileDialog.getOpenFileName(
             filter='Images (*.png *.jpeg *.jpg)')
         try:
-            path = self._deck.add_image(file_name[0])
+            path = self._deck.add_image(
+                file_name[0], self._cards_list.currentRow())
             self._answer_edit.textCursor().insertImage(path)
         except FileNotFoundError:
             pass
 
-    def disable_right(self) -> None:
+    def disable(self) -> None:
         self._old_select = None
         self._question_edit.setText('')
         self._question_edit.setDisabled(True)
         self._answer_edit.setText('')
         self._answer_edit.setDisabled(True)
         self._add_img_btn.setDisabled(True)
+        self._remove_btn.setDisabled(True)
+        self._up_btn.setDisabled(True)
+        self._down_btn.setDisabled(True)
 
     def exit(self) -> None:
-        self.show_card()
+        try:
+            self._deck.cards[self._old_select].question \
+                = self._question_edit.text()
+            self._deck.cards[self._old_select].answer \
+                = self._answer_edit.toHtml()
+        except TypeError:
+            pass
         self._deck.dump()

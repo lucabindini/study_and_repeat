@@ -40,12 +40,12 @@ class StudyWidget(QtWidgets.QWidget):
     def show_question(self) -> None:
         try:
             self._current_card = self._deck.get_card()
-            self._question_text.setText(self._current_card.question)
-            self._answer_text.setText(self._current_card.answer)
         except deck.EmptyQueuesException:
             self._deck.dump()
-            print(self.window())
             self.window().setCentralWidget(home_widget.HomeWidget())
+        else:
+            self._question_text.setText(self._current_card.question)
+            self._answer_text.setText(self._current_card.answer)
 
     def show_answer(self) -> None:
         self._show_btn.hide()
