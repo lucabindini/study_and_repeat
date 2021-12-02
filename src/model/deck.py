@@ -8,6 +8,10 @@ import shutil
 from model import card
 
 
+DECKS_DIR = 'decks/'
+IMG_DIR = 'img/'
+
+
 class Deck:
 
     def __init__(self, name: str) -> None:
@@ -21,8 +25,8 @@ class Deck:
         self._new_queue: collections.deque[card.Card] = collections.deque()
         self._is_new = True
         self._img_id = 0
-        os.mkdir('decks/'+name)
-        os.mkdir('decks/'+name+'/img')
+        os.mkdir(DECKS_DIR+name)
+        os.mkdir(f'{DECKS_DIR}{name}/{IMG_DIR}')
 
     def add_card(self, question: str, answer: str) -> None:
         self.cards.append(card.Card(self._current_id, question, answer))
@@ -43,7 +47,8 @@ class Deck:
             self._new_queue.remove(c)
         del self._cards_strengths[c.identifier]
         del self.cards[index]
-        for f in glob.iglob(f'decks/{self.name}/img/{c.identifier}-*'):
+        for f in glob.iglob(f'{DECKS_DIR}{self.name}/'
+                            + f'{IMG_DIR}{c.identifier}-*'):
             os.remove(f)
 
     def move_card(self, index: int, up: bool) -> None:
@@ -60,7 +65,7 @@ class Deck:
             self.cards[index],  self.cards[index - (2*up-1)]
 
     def add_image(self, src: str, index: int) -> str:
-        dst = f'decks/{self.name}/img/' \
+        dst = f'{DECKS_DIR}{self.name}/{IMG_DIR}' \
             + f'{self.cards[index].identifier}-' \
             + f'{self._img_id}-{os.path.basename(src)}'
         shutil.copyfile(src, dst)
@@ -92,7 +97,7 @@ class Deck:
             self._queues[0].append(c)
 
     def dump(self):
-        with open('decks/'+self.name+'/deck.pickle', 'wb') as f:
+        with open(f'{DECKS_DIR}{self.name}/deck.pickle', 'wb') as f:
             pickle.dump(self, f)
 
 

@@ -70,8 +70,16 @@ class EditorWidget(QtWidgets.QWidget):
         self._cards_list.setCurrentRow(self._cards_list.currentRow())
         self._cards_list.clearSelection()
         self._deck.remove_card(current_row)
-        self.disable()
-        # TODO select next card
+        self._cards_list.setCurrentRow(
+            min(current_row, self._cards_list.count() - 1))
+        self._old_select = self._cards_list.currentRow()
+        if self._cards_list.count() == 0:
+            self.disable()
+        else:
+            if self._cards_list.currentRow() == self._cards_list.count() - 1:
+                self._down_btn.setDisabled(True)
+            if self._cards_list.currentRow() == 0:
+                self._up_btn.setDisabled(True)
 
     def create_card(self) -> None:
         self._deck.add_card('', '')
@@ -98,9 +106,9 @@ class EditorWidget(QtWidgets.QWidget):
 
     def show_card(self) -> None:
         try:
-            self._deck.cards[self._old_select].question \
+            self._deck.cards[self._old_select].question\
                 = self._question_edit.text()
-            self._deck.cards[self._old_select].answer \
+            self._deck.cards[self._old_select].answer\
                 = self._answer_edit.toHtml()
             self._cards_list.item(self._old_select).setText(
                 self.question_prefix
@@ -147,9 +155,9 @@ class EditorWidget(QtWidgets.QWidget):
 
     def exit(self) -> None:
         try:
-            self._deck.cards[self._old_select].question \
+            self._deck.cards[self._old_select].question\
                 = self._question_edit.text()
-            self._deck.cards[self._old_select].answer \
+            self._deck.cards[self._old_select].answer\
                 = self._answer_edit.toHtml()
         except TypeError:
             pass
