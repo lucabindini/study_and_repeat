@@ -1,4 +1,4 @@
-from PyQt5 import QtWidgets, QtCore
+from PyQt5 import QtWidgets, QtGui, QtCore
 
 from model import deck
 
@@ -22,16 +22,20 @@ class EditorWidget(QtWidgets.QWidget):
         left_layout.addWidget(self._cards_list)
         create_remove_widget = QtWidgets.QWidget()
         create_remove_layout = QtWidgets.QGridLayout()
-        create_btn = QtWidgets.QPushButton('Create card')
+        create_btn = QtWidgets.QPushButton(QtGui.QIcon(
+            'src/fugue-icons/icons-shadowless/plus.png'), 'New')
         create_remove_layout.addWidget(create_btn, 0, 0)
         create_btn.released.connect(self.create_card)
-        self._remove_btn = QtWidgets.QPushButton('Remove card')
+        self._remove_btn = QtWidgets.QPushButton(QtGui.QIcon(
+            'src/fugue-icons/icons-shadowless/minus.png'), 'Remove')
         create_remove_layout.addWidget(self._remove_btn, 1, 0)
         self._remove_btn.released.connect(self.remove_card)
-        self._up_btn = QtWidgets.QPushButton('Up')
+        self._up_btn = QtWidgets.QPushButton(QtGui.QIcon(
+            'src/fugue-icons/icons-shadowless/arrow-090.png'), '')
         create_remove_layout.addWidget(self._up_btn, 0, 1)
         self._up_btn.released.connect(lambda: self.move_card(True))
-        self._down_btn = QtWidgets.QPushButton('Down')
+        self._down_btn = QtWidgets.QPushButton(QtGui.QIcon(
+            'src/fugue-icons/icons-shadowless/arrow-270.png'), '')
         create_remove_layout.addWidget(self._down_btn, 1, 1)
         self._down_btn.released.connect(lambda: self.move_card(False))
         create_remove_widget.setLayout(create_remove_layout)
@@ -54,8 +58,8 @@ class EditorWidget(QtWidgets.QWidget):
         right_widget.setLayout(right_layout)
 
         h_layout.addWidget(left_widget, 100//self.proportion)
-        h_layout.addWidget(right_widget, 100 *
-                           (self.proportion-1)//self.proportion)
+        h_layout.addWidget(right_widget,
+                           100 * (self.proportion-1) // self.proportion)
         self.setLayout(h_layout)
         self.window().setCentralWidget(self)
 

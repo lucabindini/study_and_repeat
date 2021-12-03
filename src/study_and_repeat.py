@@ -1,4 +1,5 @@
 import os
+import sys
 
 from PyQt5 import QtWidgets
 
@@ -7,8 +8,8 @@ from model import deck
 
 
 if not os.access(deck.DECKS_DIR, os.F_OK):
-    os.mkdir(deck.DECKS_DIR)
-app = QtWidgets.QApplication([])
+    os.makedirs(deck.DECKS_DIR)
+app = QtWidgets.QApplication(sys.argv)
 win = main_window.MainWindow()
 win.show()
 app.exec()

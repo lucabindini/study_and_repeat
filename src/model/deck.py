@@ -4,11 +4,16 @@ import glob
 import os
 import pickle
 import shutil
+import sys
+
+from PyQt5 import QtCore
 
 from model import card
 
 
-DECKS_DIR = 'decks/'
+DECKS_DIR = '{}/study_and_repeat/decks/'.format(
+    QtCore.QStandardPaths.writableLocation(
+        QtCore.QStandardPaths.AppDataLocation))
 IMG_DIR = 'img/'
 
 
@@ -25,8 +30,7 @@ class Deck:
         self._new_queue: collections.deque[card.Card] = collections.deque()
         self._is_new = True
         self._img_id = 0
-        os.mkdir(DECKS_DIR+name)
-        os.mkdir(f'{DECKS_DIR}{name}/{IMG_DIR}')
+        os.makedirs(f'{DECKS_DIR}{name}/{IMG_DIR}')
 
     def add_card(self, question: str, answer: str) -> None:
         self.cards.append(card.Card(self._current_id, question, answer))
