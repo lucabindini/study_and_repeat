@@ -2,6 +2,7 @@ from PyQt5 import QtWidgets
 
 from model import deck
 from view import editor_widget, study_widget
+import config
 
 
 class HomeWidget(QtWidgets.QWidget):
@@ -23,7 +24,7 @@ class HomeWidget(QtWidgets.QWidget):
 
     def create_deck(self) -> None:
         try:
-            d = deck.load_deck(f'{deck.DECKS_DIR}{self._deck_edit.text()}'
+            d = deck.load_deck(f'{config.DECKS_DIR}{self._deck_edit.text()}'
                                + f'/deck.pickle')
         except FileNotFoundError:
             d = deck.Deck(self._deck_edit.text())
@@ -32,7 +33,7 @@ class HomeWidget(QtWidgets.QWidget):
     def study_deck(self) -> None:
         study_widget.StudyWidget(
             deck.load_deck(
-                f'{deck.DECKS_DIR}{self._deck_edit.text()}/deck.pickle'),
+                f'{config.DECKS_DIR}{self._deck_edit.text()}/deck.pickle'),
             parent=self.window())
 
     def exit(self) -> None:

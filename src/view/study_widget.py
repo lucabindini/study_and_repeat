@@ -2,6 +2,7 @@ from PyQt5 import QtWidgets, QtGui
 
 from model import deck
 from view import home_widget
+import config
 
 
 class StudyWidget(QtWidgets.QWidget):
@@ -20,16 +21,16 @@ class StudyWidget(QtWidgets.QWidget):
         self._correctness_btns = QtWidgets.QWidget()
         btn_layout = QtWidgets.QHBoxLayout()
         incorrect_btn = QtWidgets.QPushButton(QtGui.QIcon(
-            'src/fugue-icons/icons-shadowless/cross.png'), 'Incorrect')
+            f'{config.ICONS_DIR}cross.png'), 'Incorrect')
         btn_layout.addWidget(incorrect_btn)
         incorrect_btn.released.connect(lambda: self.next_question(False))
         correct_btn = QtWidgets.QPushButton(QtGui.QIcon(
-            'src/fugue-icons/icons-shadowless/tick.png'), 'Correct')
+            f'{config.ICONS_DIR}tick.png'), 'Correct')
         btn_layout.addWidget(correct_btn)
         correct_btn.released.connect(lambda: self.next_question(True))
         self._correctness_btns.setLayout(btn_layout)
         self._show_btn = QtWidgets.QPushButton(QtGui.QIcon(
-            'src/fugue-icons/icons-shadowless/eye.png'), 'Show answer')
+            f'{config.ICONS_DIR}eye.png'), 'Show answer')
         self._show_btn.released.connect(self.show_answer)
         v_layout.addWidget(self._show_btn)
         v_layout.addWidget(self._correctness_btns)

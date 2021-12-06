@@ -1,12 +1,13 @@
-from PyQt5 import QtWidgets, QtGui, QtCore
+from PyQt5 import QtWidgets, QtGui
 
 from model import deck
+import config
 
 
 class EditorWidget(QtWidgets.QWidget):
 
     question_prefix = '- '
-    proportion = 8
+    proportion = 6
 
     def __init__(self, d: deck.Deck, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
@@ -23,19 +24,19 @@ class EditorWidget(QtWidgets.QWidget):
         create_remove_widget = QtWidgets.QWidget()
         create_remove_layout = QtWidgets.QGridLayout()
         create_btn = QtWidgets.QPushButton(QtGui.QIcon(
-            'src/fugue-icons/icons-shadowless/plus.png'), 'New')
+            f'{config.ICONS_DIR}plus.png'), 'New')
         create_remove_layout.addWidget(create_btn, 0, 0)
         create_btn.released.connect(self.create_card)
         self._remove_btn = QtWidgets.QPushButton(QtGui.QIcon(
-            'src/fugue-icons/icons-shadowless/minus.png'), 'Remove')
+            f'{config.ICONS_DIR}minus.png'), 'Remove')
         create_remove_layout.addWidget(self._remove_btn, 1, 0)
         self._remove_btn.released.connect(self.remove_card)
         self._up_btn = QtWidgets.QPushButton(QtGui.QIcon(
-            'src/fugue-icons/icons-shadowless/arrow-090.png'), '')
+            f'{config.ICONS_DIR}arrow-090.png'), '')
         create_remove_layout.addWidget(self._up_btn, 0, 1)
         self._up_btn.released.connect(lambda: self.move_card(True))
         self._down_btn = QtWidgets.QPushButton(QtGui.QIcon(
-            'src/fugue-icons/icons-shadowless/arrow-270.png'), '')
+            f'{config.ICONS_DIR}arrow-270.png'), '')
         create_remove_layout.addWidget(self._down_btn, 1, 1)
         self._down_btn.released.connect(lambda: self.move_card(False))
         create_remove_widget.setLayout(create_remove_layout)
