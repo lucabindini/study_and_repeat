@@ -10,6 +10,6 @@ import config
 if not os.access(config.DECKS_DIR, os.F_OK):
     os.makedirs(config.DECKS_DIR)
 app = QtWidgets.QApplication(sys.argv)
-win = main_window.MainWindow()
-win.show()
+window = main_window.self()
+window.show()
 app.exec()

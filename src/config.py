@@ -10,6 +10,8 @@ DECKS_DIR = '{}/study_and_repeat/decks/'.format(
 
 IMG_DIR = 'img/'
 
+DECK_FILE = 'deck.pickle'
+
 ICONS_DIR = 'src/img/fugue-icons-3.5.6/icons-shadowless/'
 LOGO_PATH = 'src/img/favicon.ico'
 if hasattr(sys, '_MEIPASS'):

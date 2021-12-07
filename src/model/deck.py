@@ -93,7 +93,7 @@ class Deck:
             self._queues[0].append(c)
 
     def dump(self):
-        with open(f'{config.DECKS_DIR}{self.name}/deck.pickle', 'wb') as f:
+        with open(f'{config.DECKS_DIR}{self.name}/{config.DECK_FILE}', 'wb') as f:
             pickle.dump(self, f)
 
 
