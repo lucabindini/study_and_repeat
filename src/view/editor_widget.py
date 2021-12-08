@@ -1,16 +1,19 @@
 from PyQt5 import QtWidgets, QtGui
 
 from model import deck
+from view import secondary_widget
 import config
 
 
-class EditorWidget(QtWidgets.QWidget):
+class EditorWidget(secondary_widget.SecondaryWidget):
 
     question_prefix = '- '
     proportion = 6
 
     def __init__(self, d: deck.Deck, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
+
+        self.window().setWindowTitle(f'Study and Repeat - {d.name}')
 
         self._deck = d
         h_layout = QtWidgets.QHBoxLayout()
@@ -61,8 +64,7 @@ class EditorWidget(QtWidgets.QWidget):
         h_layout.addWidget(left_widget, 100//self.proportion)
         h_layout.addWidget(right_widget,
                            100 * (self.proportion-1) // self.proportion)
-        self.setLayout(h_layout)
-        self.window().setCentralWidget(self)
+        self._central_widget.setLayout(h_layout)
 
         self.disable()
         self._cards_list.addItems(

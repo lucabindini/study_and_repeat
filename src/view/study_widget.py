@@ -1,14 +1,16 @@
 from PyQt5 import QtWidgets, QtGui
 
 from model import deck
-from view import home_widget
+from view import home_widget, secondary_widget
 import config
 
 
-class StudyWidget(QtWidgets.QWidget):
+class StudyWidget(secondary_widget.SecondaryWidget):
 
     def __init__(self, d: deck.Deck, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
+
+        self.window().setWindowTitle(f'Study and Repeat - {d.name}')
 
         self._deck = d
         v_layout = QtWidgets.QVBoxLayout()
@@ -36,9 +38,8 @@ class StudyWidget(QtWidgets.QWidget):
         v_layout.addWidget(self._correctness_btns)
         self._correctness_btns.hide()
         self._answer_text.hide()
-        self.setLayout(v_layout)
 
-        self.window().setCentralWidget(self)
+        self._central_widget.setLayout(v_layout)
         self.show_question()
 
     def show_question(self) -> None:

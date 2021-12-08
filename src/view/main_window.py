@@ -1,3 +1,5 @@
+import re
+
 from PyQt5 import QtWidgets, QtGui, QtCore
 
 from view import home_widget, editor_widget
@@ -82,6 +84,12 @@ class CustomDialog(QtWidgets.QDialog):
         layout = QtWidgets.QVBoxLayout()
         self.setLayout(layout)
 
+        self._error_label = QtWidgets.QLabel('The only permitted characters are '
+                                       + 'a..z, A..Z, 0..9 and _')
+        self._error_label.setStyleSheet("color: #ff0000")
+        layout.addWidget(self._error_label)
+        self._error_label.hide()
+
         self._line_edit = QtWidgets.QLineEdit(self)
         self._line_edit.setPlaceholderText('Insert deck name')
         layout.addWidget(self._line_edit)
@@ -93,5 +101,8 @@ class CustomDialog(QtWidgets.QDialog):
         layout.addWidget(button_box)
 
     def accept(self, *args, **kwargs) -> None:
-        super().accept()
-        self.deck = deck.Deck(self._line_edit.text())
+        if re.fullmatch('[a-zA-Z0-9_]+', self._line_edit.text()) is None:
+            self._error_label.show()
+        else:
+            super().accept()
+            self.deck = deck.Deck(self._line_edit.text())

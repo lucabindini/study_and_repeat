@@ -24,6 +24,8 @@ class HomeWidget(QtWidgets.QWidget):
 
     def populate_list(self) -> None:
         for deck_name in sorted(os.listdir(config.DECKS_DIR)):
+            if deck_name.startswith('.'):
+                continue
             widget = QtWidgets.QWidget(self._scroll_area_widget_contents)
             horizontal_layout = QtWidgets.QHBoxLayout(widget)
             horizontal_layout.setAlignment(QtCore.Qt.AlignCenter)
