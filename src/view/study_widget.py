@@ -7,12 +7,9 @@ import config
 
 class StudyWidget(secondary_widget.SecondaryWidget):
 
-    def __init__(self, d: deck.Deck, *args, **kwargs) -> None:
+    def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
 
-        self.window().setWindowTitle(f'Study and Repeat - {d.name}')
-
-        self._deck = d
         v_layout = QtWidgets.QVBoxLayout()
         self._question_text = QtWidgets.QLineEdit()
         self._question_text.setReadOnly(True)

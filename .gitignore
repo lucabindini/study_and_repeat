@@ -1,3 +1,6 @@
 **/__pycache__
 src/img/fugue-icons-3.5.6
+build
+dist
+*.spec
 .vscode

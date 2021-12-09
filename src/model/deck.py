@@ -92,9 +92,13 @@ class Deck:
             self._cards_strengths[c.identifier] = 1
             self._queues[0].append(c)
 
-    def dump(self):
-        with open(f'{config.DECKS_DIR}{self.name}/{config.DECK_FILE}', 'wb') as f:
+    def dump(self) -> None:
+        with open(f'{config.DECKS_DIR}{self.name}/{config.DECK_FILE}',
+                  'wb') as f:
             pickle.dump(self, f)
+
+    def delete(self) -> None:
+        shutil.rmtree(f'{config.DECKS_DIR}{self.name}')
 
 
 def load_deck(filepath: str) -> Deck:

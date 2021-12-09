@@ -10,12 +10,9 @@ class EditorWidget(secondary_widget.SecondaryWidget):
     question_prefix = '- '
     proportion = 6
 
-    def __init__(self, d: deck.Deck, *args, **kwargs) -> None:
+    def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
 
-        self.window().setWindowTitle(f'Study and Repeat - {d.name}')
-
-        self._deck = d
         h_layout = QtWidgets.QHBoxLayout()
 
         left_widget = QtWidgets.QWidget()
