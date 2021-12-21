@@ -12,7 +12,9 @@ class HomeWidget(QtWidgets.QWidget):
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
 
+        self.window().setWindowTitle('Study and Repeat')
         outer_layout = QtWidgets.QVBoxLayout(self)
+
         label = QtWidgets.QLabel('Your decks')
         label.setAlignment(QtCore.Qt.AlignCenter)
         font = label.font()
@@ -25,6 +27,13 @@ class HomeWidget(QtWidgets.QWidget):
         self._scroll_area.setWidgetResizable(True)
         self.populate_list()
         outer_layout.addWidget(self._scroll_area)
+
+        new_deck_btn = QtWidgets.QPushButton(
+                QtGui.QIcon(f'{config.ICONS_DIR}plus.png'), 'Create new deck')
+        new_deck_btn.released.connect(self.window().create_deck)
+        outer_layout.addWidget(new_deck_btn)
+
+        self.window().action_new_deck.setVisible(True)
 
     def populate_list(self) -> None:
         self._scroll_area_widget_contents = QtWidgets.QWidget()
@@ -47,13 +56,22 @@ class HomeWidget(QtWidgets.QWidget):
             study_btn = QtWidgets.QPushButton(
                 QtGui.QIcon(f'{config.ICONS_DIR}book-open.png'), '')
             study_btn.setFixedWidth(32)
+            study_btn.setToolTip('Study deck')
             study_btn.released.connect(lambda d=deck_name: self.study_deck(d))
             horizontal_layout.addWidget(study_btn)
             edit_btn = QtWidgets.QPushButton(
                 QtGui.QIcon(f'{config.ICONS_DIR}pencil.png'), '')
             edit_btn.setFixedWidth(32)
+            edit_btn.setToolTip('Edit deck')
             edit_btn.released.connect(lambda d=deck_name: self.edit_deck(d))
+            delete_btn = QtWidgets.QPushButton(
+                QtGui.QIcon(f'{config.ICONS_DIR}cross.png'), '')
+            delete_btn.setFixedWidth(32)
+            delete_btn.setToolTip('Delete deck')
+            delete_btn.released.connect(lambda d=deck_name: self.delete_deck(d))
+            horizontal_layout.addWidget(study_btn)
             horizontal_layout.addWidget(edit_btn)
+            horizontal_layout.addWidget(delete_btn)
             self._inner_layout.addWidget(frame)
         self._scroll_area.setWidget(self._scroll_area_widget_contents)
 
@@ -67,10 +85,20 @@ class HomeWidget(QtWidgets.QWidget):
             f'{config.DECKS_DIR}{name}/{config.DECK_FILE}'),
             parent=self.window())
 
-    def delete_deck(self) -> None:
-        dlg = SelectDeckDialog('delete', self)
-        if dlg.exec():
-            dlg.deck.delete()
+    def delete_deck(self, deck_name: str = None) -> None:
+        if deck_name is None:
+            dlg = SelectDeckDialog('delete', self)
+            if dlg.exec():
+                deck_name = dlg.deck_name
+        if deck_name is not None:
+            dialog = QtWidgets.QMessageBox(parent=self.window())
+            dialog.setText(f'Are you sure you want delete {deck_name} deck?')
+            dialog.setStandardButtons(QtWidgets.QMessageBox.Ok | QtWidgets.QMessageBox.Cancel)
+            if dialog.exec() == QtWidgets.QMessageBox.Ok:
+                d = deck.load_deck(
+                    f'{config.DECKS_DIR}{deck_name}/'
+                    + config.DECK_FILE)
+                d.delete()
             self.populate_list()
 
     def exit(self) -> None:
@@ -102,6 +130,4 @@ class SelectDeckDialog(QtWidgets.QDialog):
 
     def accept(self, *args, **kwargs) -> None:
         super().accept()
-        self.deck = deck.load_deck(
-            f'{config.DECKS_DIR}{self._combo_box.currentText()}/'
-            + config.DECK_FILE)
+        self.deck_name = self._combo_box.currentText()

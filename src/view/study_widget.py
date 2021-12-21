@@ -44,7 +44,8 @@ class StudyWidget(secondary_widget.SecondaryWidget):
             self._current_card = self._deck.get_card()
         except deck.EmptyQueuesException:
             self._deck.dump()
-            self.window().setCentralWidget(home_widget.HomeWidget())
+            self.window().setCentralWidget(home_widget.HomeWidget(
+                parent=self.window()))
         else:
             self._question_text.setText(self._current_card.question)
             self._answer_text.setText(self._current_card.answer)

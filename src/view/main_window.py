@@ -1,21 +1,21 @@
 import re
 
 from PyQt5 import QtWidgets, QtGui, QtCore
+import qdarkstyle
 
 from view import home_widget, editor_widget
 from model import deck
 import config
 
 
-class self(QtWidgets.QMainWindow):
+class MainWindow(QtWidgets.QMainWindow):
 
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         self.setWindowIcon(QtGui.QIcon(config.LOGO_PATH))
-        self.setWindowTitle('Study and Repeat')
+        self.setStyleSheet(qdarkstyle.load_stylesheet_pyqt5())
         self.resize(800, 600)
-        self.setMinimumSize(self.size())
-        self.setCentralWidget(home_widget.HomeWidget())
+        self.setMinimumSize(self.size()/2)
 
         menubar = QtWidgets.QMenuBar(self)
 
@@ -27,13 +27,13 @@ class self(QtWidgets.QMainWindow):
         # action_import_deck = QtWidgets.QAction(self)
         # action_local_export = QtWidgets.QAction(self)
         # action_remote_export = QtWidgets.QAction(self)
-        action_delete_deck = QtWidgets.QAction(self)
+        self.action_delete_deck = QtWidgets.QAction(self)
         # menu_export_deck.addAction(action_local_export)
         # menu_export_deck.addAction(action_remote_export)
         menu_file.addAction(self.action_new_deck)
         # menu_file.addAction(action_import_deck)
         # menu_file.addAction(menu_export_deck.menuAction())
-        menu_file.addAction(action_delete_deck)
+        menu_file.addAction(self.action_delete_deck)
         menu_file.addAction(action_quit)
         menubar.addAction(menu_file.menuAction())
         # menu_help = QtWidgets.QMenu(menubar)
@@ -59,13 +59,15 @@ class self(QtWidgets.QMainWindow):
         #     'Study and Repeat', 'Local export'))
         # action_remote_export.setText(QtCore.QCoreApplication.translate(
         #     'Study and Repeat', 'Remote export'))
-        action_delete_deck.setText(QtCore.QCoreApplication.translate(
+        self.action_delete_deck.setText(QtCore.QCoreApplication.translate(
             'Study and Repeat', 'Delete deck'))
 
         self.action_new_deck.triggered.connect(self.create_deck)
         action_quit.triggered.connect(self.close)
-        action_delete_deck.triggered.connect(
+        self.action_delete_deck.triggered.connect(
             lambda: self.centralWidget().delete_deck())
+
+        self.setCentralWidget(home_widget.HomeWidget(parent=self))
 
     def create_deck(self) -> None:
         dlg = NewDeckDialog(self)
@@ -87,8 +89,8 @@ class NewDeckDialog(QtWidgets.QDialog):
         layout = QtWidgets.QVBoxLayout()
         self.setLayout(layout)
 
-        self._error_label = QtWidgets.QLabel('The only permitted characters are '
-                                             + 'a-z, A-Z, 0-9 and _')
+        self._error_label = QtWidgets.QLabel('The only permitted characters '
+                                             + 'are a-z, A-Z, 0-9 and _')
         self._error_label.setStyleSheet("color: #ff0000")
         layout.addWidget(self._error_label)
         self._error_label.hide()
@@ -97,7 +99,8 @@ class NewDeckDialog(QtWidgets.QDialog):
         self._line_edit.setPlaceholderText('Insert deck name')
         layout.addWidget(self._line_edit)
 
-        q_btn = QtWidgets.QDialogButtonBox.Ok | QtWidgets.QDialogButtonBox.Cancel
+        q_btn = QtWidgets.QDialogButtonBox.Ok \
+            | QtWidgets.QDialogButtonBox.Cancel
         button_box = QtWidgets.QDialogButtonBox(q_btn, parent=self)
         button_box.accepted.connect(self.accept)
         button_box.rejected.connect(self.reject)

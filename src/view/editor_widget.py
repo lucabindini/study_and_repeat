@@ -1,6 +1,5 @@
 from PyQt5 import QtWidgets, QtGui
 
-from model import deck
 from view import secondary_widget
 import config
 
@@ -33,10 +32,12 @@ class EditorWidget(secondary_widget.SecondaryWidget):
         self._remove_btn.released.connect(self.remove_card)
         self._up_btn = QtWidgets.QPushButton(QtGui.QIcon(
             f'{config.ICONS_DIR}arrow-090.png'), '')
+        self._up_btn.setToolTip('Move up selected card')
         create_remove_layout.addWidget(self._up_btn, 0, 1)
         self._up_btn.released.connect(lambda: self.move_card(True))
         self._down_btn = QtWidgets.QPushButton(QtGui.QIcon(
             f'{config.ICONS_DIR}arrow-270.png'), '')
+        self._down_btn.setToolTip('Move down selected card')
         create_remove_layout.addWidget(self._down_btn, 1, 1)
         self._down_btn.released.connect(lambda: self.move_card(False))
         create_remove_widget.setLayout(create_remove_layout)
@@ -53,7 +54,8 @@ class EditorWidget(secondary_widget.SecondaryWidget):
         right_layout.addWidget(answer_label)
         self._answer_edit = QtWidgets.QTextEdit()
         right_layout.addWidget(self._answer_edit)
-        self._add_img_btn = QtWidgets.QPushButton('Add image')
+        self._add_img_btn = QtWidgets.QPushButton(QtGui.QIcon(
+            f'{config.ICONS_DIR}picture.png'), 'Add image')
         right_layout.addWidget(self._add_img_btn)
         self._add_img_btn.released.connect(self.add_image)
         right_widget.setLayout(right_layout)
@@ -137,7 +139,7 @@ class EditorWidget(secondary_widget.SecondaryWidget):
         self._old_select = self._cards_list.currentRow()
 
     def add_image(self) -> None:
-        file_name = QtWidgets.QFileDialog.getOpenFileName(
+        file_name = QtWidgets.QFileDialog.getOpenFileName(parent=self.window(),
             filter='Images (*.png *.jpeg *.jpg)')
         try:
             path = self._deck.add_image(

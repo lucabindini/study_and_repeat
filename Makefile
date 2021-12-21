@@ -11,7 +11,7 @@ else
 	endif
 endif
 
-dist/study_and_repeat : src/**/*.py
+dist/study_and_repeat : src/*.py src/*/*.py
 	pyinstaller $(options) --icon src/img/favicon.ico \
 	  --add-data 'src/img/fugue-icons-3.5.6/icons-shadowless/*.png$(pathsep)src/img/fugue-icons-3.5.6/icons-shadowless' \
 	  --add-data 'src/img/favicon.ico$(pathsep)src/img' \
@@ -23,5 +23,5 @@ ifeq ($(OS),Windows_NT)
 	-rmdir /s /q build dist
 	-erase .\*.spec
 else
-	rm --recursive --force build dist ./*.spec
+	rm -rf build dist ./*.spec
 endif
