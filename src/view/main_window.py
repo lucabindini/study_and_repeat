@@ -1,3 +1,4 @@
+import os
 import re
 
 from PyQt5 import QtWidgets, QtGui, QtCore
@@ -20,19 +21,15 @@ class MainWindow(QtWidgets.QMainWindow):
         menubar = QtWidgets.QMenuBar(self)
 
         menu_file = QtWidgets.QMenu(menubar)
-        # menu_export_deck = QtWidgets.QMenu(menu_file)
         self.setMenuBar(menubar)
         self.action_new_deck = QtWidgets.QAction(self)
         action_quit = QtWidgets.QAction(self)
-        # action_import_deck = QtWidgets.QAction(self)
-        # action_local_export = QtWidgets.QAction(self)
-        # action_remote_export = QtWidgets.QAction(self)
+        self.action_import = QtWidgets.QAction(self)
+        self.action_export = QtWidgets.QAction(self)
         self.action_delete_deck = QtWidgets.QAction(self)
-        # menu_export_deck.addAction(action_local_export)
-        # menu_export_deck.addAction(action_remote_export)
         menu_file.addAction(self.action_new_deck)
-        # menu_file.addAction(action_import_deck)
-        # menu_file.addAction(menu_export_deck.menuAction())
+        menu_file.addAction(self.action_export)
+        menu_file.addAction(self.action_import)
         menu_file.addAction(self.action_delete_deck)
         menu_file.addAction(action_quit)
         menubar.addAction(menu_file.menuAction())
@@ -43,8 +40,6 @@ class MainWindow(QtWidgets.QMainWindow):
 
         menu_file.setTitle(QtCore.QCoreApplication.translate(
             'Study and Repeat', 'File'))
-        # menu_export_deck.setTitle(QtCore.QCoreApplication.translate(
-        #     'Study and Repeat', 'Export deck'))
         # menu_help.setTitle(QtCore.QCoreApplication.translate(
         #     'Study and Repeat', 'Help'))
         self.action_new_deck.setText(QtCore.QCoreApplication.translate(
@@ -53,12 +48,10 @@ class MainWindow(QtWidgets.QMainWindow):
         #     'Study and Repeat', 'About'))
         action_quit.setText(QtCore.QCoreApplication.translate(
             'Study and Repeat', 'Quit'))
-        # action_import_deck.setText(QtCore.QCoreApplication.translate(
-        #     'Study and Repeat', 'Import deck'))
-        # action_local_export.setText(QtCore.QCoreApplication.translate(
-        #     'Study and Repeat', 'Local export'))
-        # action_remote_export.setText(QtCore.QCoreApplication.translate(
-        #     'Study and Repeat', 'Remote export'))
+        self.action_import.setText(QtCore.QCoreApplication.translate(
+            'Study and Repeat', 'Import deck'))
+        self.action_export.setText(QtCore.QCoreApplication.translate(
+            'Study and Repeat', 'Export deck'))
         self.action_delete_deck.setText(QtCore.QCoreApplication.translate(
             'Study and Repeat', 'Delete deck'))
 
@@ -66,6 +59,10 @@ class MainWindow(QtWidgets.QMainWindow):
         action_quit.triggered.connect(self.close)
         self.action_delete_deck.triggered.connect(
             lambda: self.centralWidget().delete_deck())
+        self.action_export.triggered.connect(
+            lambda: self.centralWidget().export_deck())
+        self.action_import.triggered.connect(
+            lambda: self.centralWidget().import_deck())
 
         self.setCentralWidget(home_widget.HomeWidget(parent=self))
 
@@ -89,11 +86,17 @@ class NewDeckDialog(QtWidgets.QDialog):
         layout = QtWidgets.QVBoxLayout()
         self.setLayout(layout)
 
-        self._error_label = QtWidgets.QLabel('The only permitted characters '
-                                             + 'are a-z, A-Z, 0-9 and _')
-        self._error_label.setStyleSheet("color: #ff0000")
-        layout.addWidget(self._error_label)
-        self._error_label.hide()
+        self._syntax_error_label = QtWidgets.QLabel(
+            'The only permitted characters are a-z, A-Z, 0-9 and _')
+        self._syntax_error_label.setStyleSheet("color: #ff0000")
+        layout.addWidget(self._syntax_error_label)
+        self._syntax_error_label.hide()
+
+        self._exist_error_label = QtWidgets.QLabel(
+            'Two decks cannot have the same name')
+        self._exist_error_label.setStyleSheet("color: #ff0000")
+        layout.addWidget(self._exist_error_label)
+        self._exist_error_label.hide()
 
         self._line_edit = QtWidgets.QLineEdit(self)
         self._line_edit.setPlaceholderText('Insert deck name')
@@ -108,7 +111,9 @@ class NewDeckDialog(QtWidgets.QDialog):
 
     def accept(self, *args, **kwargs) -> None:
         if re.fullmatch('[a-zA-Z0-9_]+', self._line_edit.text()) is None:
-            self._error_label.show()
+            self._syntax_error_label.show()
+        elif os.access(f'{config.DECKS_DIR}{self._line_edit.text()}', os.F_OK):
+            self._exist_error_label.show()
         else:
             super().accept()
             self.deck = deck.Deck(self._line_edit.text())

@@ -112,10 +112,10 @@ class EditorWidget(secondary_widget.SecondaryWidget):
 
     def show_card(self) -> None:
         try:
-            self._deck.cards[self._old_select].question\
+            self._deck.cards[self._old_select].question \
                 = self._question_edit.text()
-            self._deck.cards[self._old_select].answer\
-                = self._answer_edit.toHtml()
+            self._deck.cards[self._old_select].set_answer(
+                self._answer_edit.toHtml())
             self._cards_list.item(self._old_select).setText(
                 self.question_prefix
                 + self._deck.cards[self._old_select].question)
@@ -135,11 +135,12 @@ class EditorWidget(secondary_widget.SecondaryWidget):
         self._question_edit.setText(
             self._deck.cards[self._cards_list.currentRow()].question)
         self._answer_edit.setText(
-            self._deck.cards[self._cards_list.currentRow()].answer)
+            self._deck.cards[self._cards_list.currentRow()]._answer)
         self._old_select = self._cards_list.currentRow()
 
     def add_image(self) -> None:
-        file_name = QtWidgets.QFileDialog.getOpenFileName(parent=self.window(),
+        file_name = QtWidgets.QFileDialog.getOpenFileName(
+            parent=self.window(),
             filter='Images (*.png *.jpeg *.jpg)')
         try:
             path = self._deck.add_image(
@@ -161,9 +162,9 @@ class EditorWidget(secondary_widget.SecondaryWidget):
 
     def exit(self) -> None:
         try:
-            self._deck.cards[self._old_select].question\
+            self._deck.cards[self._old_select].question \
                 = self._question_edit.text()
-            self._deck.cards[self._old_select].answer\
+            self._deck.cards[self._old_select]._answer \
                 = self._answer_edit.toHtml()
         except TypeError:
             pass

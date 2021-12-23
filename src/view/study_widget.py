@@ -48,7 +48,7 @@ class StudyWidget(secondary_widget.SecondaryWidget):
                 parent=self.window()))
         else:
             self._question_text.setText(self._current_card.question)
-            self._answer_text.setText(self._current_card.answer)
+            self._answer_text.setText(self._current_card.get_answer())
 
     def show_answer(self) -> None:
         self._show_btn.hide()

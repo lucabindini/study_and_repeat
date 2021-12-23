@@ -4,6 +4,7 @@ import glob
 import os
 import pickle
 import shutil
+import tarfile
 
 from model import card
 import config
@@ -23,6 +24,18 @@ class Deck:
         self._is_new = True
         self._img_id = 0
         os.makedirs(f'{config.DECKS_DIR}{name}/{config.IMG_DIR}')
+
+    @staticmethod
+    def load_deck(filepath: str) -> Deck:
+        with open(filepath, 'rb') as f:
+            d: Deck = pickle.load(f)
+        n = min((datetime.date.today() - d.last_study_day).days,
+                len(d._queues)-1)
+        for i in range(n):
+            d._queues[0].extend(d._queues[i+1])
+        del d._queues[1:n+1]
+        d.last_study_day = datetime.date.today()
+        return d
 
     def add_card(self, question: str, answer: str) -> None:
         self.cards.append(card.Card(self._current_id, question, answer))
@@ -100,16 +113,9 @@ class Deck:
     def delete(self) -> None:
         shutil.rmtree(f'{config.DECKS_DIR}{self.name}')
 
-
-def load_deck(filepath: str) -> Deck:
-    with open(filepath, 'rb') as f:
-        d: Deck = pickle.load(f)
-    n = min((datetime.date.today() - d.last_study_day).days, len(d._queues)-1)
-    for i in range(n):
-        d._queues[0].extend(d._queues[i+1])
-    del d._queues[1:n+1]
-    d.last_study_day = datetime.date.today()
-    return d
+    def export(self, file_name: str) -> None:
+        with tarfile.open(file_name, 'w') as tar:
+            tar.add(f'{config.DECKS_DIR}{self.name}', self.name)
 
 
 class EmptyQueuesException(Exception):

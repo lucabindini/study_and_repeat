@@ -1,4 +1,5 @@
 import os
+import tarfile
 
 from PyQt5 import QtWidgets, QtCore, QtGui
 
@@ -29,11 +30,14 @@ class HomeWidget(QtWidgets.QWidget):
         outer_layout.addWidget(self._scroll_area)
 
         new_deck_btn = QtWidgets.QPushButton(
-                QtGui.QIcon(f'{config.ICONS_DIR}plus.png'), 'Create new deck')
+            QtGui.QIcon(f'{config.ICONS_DIR}plus.png'), 'Create new deck')
         new_deck_btn.released.connect(self.window().create_deck)
         outer_layout.addWidget(new_deck_btn)
 
         self.window().action_new_deck.setVisible(True)
+        self.window().action_delete_deck.setVisible(True)
+        self.window().action_import.setVisible(True)
+        self.window().action_export.setVisible(True)
 
     def populate_list(self) -> None:
         self._scroll_area_widget_contents = QtWidgets.QWidget()
@@ -68,7 +72,8 @@ class HomeWidget(QtWidgets.QWidget):
                 QtGui.QIcon(f'{config.ICONS_DIR}cross.png'), '')
             delete_btn.setFixedWidth(32)
             delete_btn.setToolTip('Delete deck')
-            delete_btn.released.connect(lambda d=deck_name: self.delete_deck(d))
+            delete_btn.released.connect(
+                lambda d=deck_name: self.delete_deck(d))
             horizontal_layout.addWidget(study_btn)
             horizontal_layout.addWidget(edit_btn)
             horizontal_layout.addWidget(delete_btn)
@@ -76,12 +81,12 @@ class HomeWidget(QtWidgets.QWidget):
         self._scroll_area.setWidget(self._scroll_area_widget_contents)
 
     def edit_deck(self, name: str) -> None:
-        d = deck.load_deck(f'{config.DECKS_DIR}{name}/'
-                           + config.DECK_FILE)
+        d = deck.Deck.load_deck(f'{config.DECKS_DIR}{name}/'
+                                + config.DECK_FILE)
         editor_widget.EditorWidget(d, parent=self.window())
 
     def study_deck(self, name: str) -> None:
-        study_widget.StudyWidget(deck.load_deck(
+        study_widget.StudyWidget(deck.Deck.load_deck(
             f'{config.DECKS_DIR}{name}/{config.DECK_FILE}'),
             parent=self.window())
 
@@ -90,15 +95,51 @@ class HomeWidget(QtWidgets.QWidget):
             dlg = SelectDeckDialog('delete', self)
             if dlg.exec():
                 deck_name = dlg.deck_name
-        if deck_name is not None:
-            dialog = QtWidgets.QMessageBox(parent=self.window())
-            dialog.setText(f'Are you sure you want delete {deck_name} deck?')
-            dialog.setStandardButtons(QtWidgets.QMessageBox.Ok | QtWidgets.QMessageBox.Cancel)
-            if dialog.exec() == QtWidgets.QMessageBox.Ok:
-                d = deck.load_deck(
-                    f'{config.DECKS_DIR}{deck_name}/'
-                    + config.DECK_FILE)
-                d.delete()
+        if deck_name is None or QtWidgets.QMessageBox.question(
+                self.window(), 'Delete deck',
+                f'Are you sure you want delete {repr(deck_name)} deck?') \
+                == QtWidgets.QMessageBox.No:
+            return
+        d = deck.Deck.load_deck(
+            f'{config.DECKS_DIR}{deck_name}/{config.DECK_FILE}')
+        d.delete()
+        self.populate_list()
+
+    def export_deck(self) -> None:
+        dialog = SelectDeckDialog('export', self)
+        if not dialog.exec():
+            return
+        deck_name = dialog.deck_name
+        directory = QtWidgets.QFileDialog.getExistingDirectory(self.window())
+        path = f'{directory}/{deck_name}.tar'
+        if os.access(path, os.F_OK) and QtWidgets.QMessageBox.question(
+                self.window(), 'File already exists',
+                f'A file called "{deck_name}.tar" already exists in the '
+                + 'selected directory. Do you want to overwrite it?') \
+                == QtWidgets.QMessageBox.No:
+            return
+        d = deck.Deck.load_deck(
+            f'{config.DECKS_DIR}{deck_name}/{config.DECK_FILE}')
+        d.export(path)
+
+    def import_deck(self) -> None:
+        file_name = QtWidgets.QFileDialog.getOpenFileName(
+            parent=self.window(), filter='Archive (*.tar)')[0]
+        try:
+            with tarfile.open(file_name) as tar:
+                print(tar.getnames()[0])
+                if os.access(f'{config.DECKS_DIR}{tar.getnames()[0]}',
+                             os.F_OK) \
+                    and QtWidgets.QMessageBox.question(
+                        self.window(), 'Deck already exists',
+                        f'A deck called {repr(tar.getnames()[0])} already '
+                        + 'exists. Do you want to overwrite it?') \
+                        == QtWidgets.QMessageBox.No:
+                    return
+                tar.extractall(config.DECKS_DIR)
+        except ValueError:
+            pass
+        else:
             self.populate_list()
 
     def exit(self) -> None:
@@ -122,7 +163,8 @@ class SelectDeckDialog(QtWidgets.QDialog):
             self._combo_box.addItem(deck_name)
         layout.addWidget(self._combo_box)
 
-        q_btn = QtWidgets.QDialogButtonBox.Ok | QtWidgets.QDialogButtonBox.Cancel
+        q_btn = QtWidgets.QDialogButtonBox.Ok \
+            | QtWidgets.QDialogButtonBox.Cancel
         button_box = QtWidgets.QDialogButtonBox(q_btn, parent=self)
         button_box.accepted.connect(self.accept)
         button_box.rejected.connect(self.reject)
