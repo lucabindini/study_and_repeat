@@ -5,9 +5,13 @@ import os
 import pickle
 import shutil
 import tarfile
+import typing
 
 from model import card
 import config
+
+
+DeckT = typing.TypeVar('DeckT', bound='Deck')
 
 
 class Deck:
@@ -26,7 +30,7 @@ class Deck:
         os.makedirs(f'{config.DECKS_DIR}{name}/{config.IMG_DIR}')
 
     @staticmethod
-    def load_deck(filepath: str) -> Deck:
+    def load(filepath: str) -> DeckT:
         with open(filepath, 'rb') as f:
             d: Deck = pickle.load(f)
         n = min((datetime.date.today() - d.last_study_day).days,
@@ -38,7 +42,8 @@ class Deck:
         return d
 
     def add_card(self, question: str, answer: str) -> None:
-        self.cards.append(card.Card(self._current_id, question, answer))
+        self.cards.append(card.Card(self._current_id,
+                          self.name, question, answer))
         self._cards_strengths[self._current_id] = 1
         self._new_queue.append(self.cards[-1])
         self._current_id += 1
@@ -109,6 +114,19 @@ class Deck:
         with open(f'{config.DECKS_DIR}{self.name}/{config.DECK_FILE}',
                   'wb') as f:
             pickle.dump(self, f)
+
+    def rename(self, name: str) -> None:
+        os.rename(f'{config.DECKS_DIR}{self.name}',
+                  f'{config.DECKS_DIR}{name}')
+        self.name = name
+        for c in self.cards:
+            c.deck_name = name
+        self.dump()
+
+    def reset(self) -> None:
+        self._new_queue = collections.deque(self.cards)
+        self._queues = [collections.deque()]
+        self._cards_strengths = [1 for _ in self.cards]
 
     def delete(self) -> None:
         shutil.rmtree(f'{config.DECKS_DIR}{self.name}')

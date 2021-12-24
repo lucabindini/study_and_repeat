@@ -49,6 +49,7 @@ class EditorWidget(secondary_widget.SecondaryWidget):
         question_label = QtWidgets.QLabel('Question:')
         right_layout.addWidget(question_label)
         self._question_edit = QtWidgets.QLineEdit()
+        self._question_edit.textEdited.connect(self.show_card)
         right_layout.addWidget(self._question_edit)
         answer_label = QtWidgets.QLabel('Answer:')
         right_layout.addWidget(answer_label)
@@ -69,6 +70,9 @@ class EditorWidget(secondary_widget.SecondaryWidget):
         self._cards_list.addItems(
             self.question_prefix + c.question
             for i, c in enumerate(self._deck.cards))
+
+        self._cards_list.setFocus()
+        self._cards_list.setCurrentRow(0)
 
     def remove_card(self) -> None:
         current_row = self._cards_list.currentRow()
@@ -94,6 +98,8 @@ class EditorWidget(secondary_widget.SecondaryWidget):
         if self._cards_list.currentRow() > 0:
             self._up_btn.setEnabled(True)
         self._down_btn.setDisabled(True)
+
+        self._question_edit.setFocus()
 
     def move_card(self, up: bool) -> None:
         current_row = self._cards_list.currentRow()
@@ -135,7 +141,7 @@ class EditorWidget(secondary_widget.SecondaryWidget):
         self._question_edit.setText(
             self._deck.cards[self._cards_list.currentRow()].question)
         self._answer_edit.setText(
-            self._deck.cards[self._cards_list.currentRow()]._answer)
+            self._deck.cards[self._cards_list.currentRow()].get_answer())
         self._old_select = self._cards_list.currentRow()
 
     def add_image(self) -> None:
@@ -164,8 +170,8 @@ class EditorWidget(secondary_widget.SecondaryWidget):
         try:
             self._deck.cards[self._old_select].question \
                 = self._question_edit.text()
-            self._deck.cards[self._old_select]._answer \
-                = self._answer_edit.toHtml()
+            self._deck.cards[self._old_select].set_answer(
+                self._answer_edit.toHtml())
         except TypeError:
             pass
         self._deck.dump()
