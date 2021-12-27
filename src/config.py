@@ -4,6 +4,9 @@ import sys
 from PyQt5 import QtCore
 
 
+TEMP_DIR = '{}/'.format(QtCore.QStandardPaths.writableLocation(
+    QtCore.QStandardPaths.TempLocation))
+
 DECKS_DIR = '{}/study_and_repeat/decks/'.format(
     QtCore.QStandardPaths.writableLocation(
         QtCore.QStandardPaths.AppDataLocation))

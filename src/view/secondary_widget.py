@@ -26,13 +26,13 @@ class SecondaryWidget(QtWidgets.QWidget):
 
         self.window().setCentralWidget(self)
 
-        self.window().action_new_deck.setVisible(False)
+        self.window().action_create_deck.setVisible(False)
         self.window().action_export_deck.setVisible(False)
         self.window().action_import_deck.setVisible(False)
         self.window().action_reset_deck.setVisible(False)
         self.window().action_delete_deck.setVisible(False)
 
     def back_home(self) -> None:
+        self.exit()
         self.window().setCentralWidget(home_widget.HomeWidget(
             parent=self.window()))
-        self.exit()

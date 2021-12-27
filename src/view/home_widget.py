@@ -1,5 +1,7 @@
+import pickle
 import os
 import re
+import shutil
 import tarfile
 
 from PyQt5 import QtWidgets, QtCore, QtGui
@@ -33,9 +35,15 @@ class HomeWidget(QtWidgets.QWidget):
         new_deck_btn = QtWidgets.QPushButton(
             QtGui.QIcon(f'{config.ICONS_DIR}plus.png'), 'Create new deck')
         new_deck_btn.released.connect(self.create_deck)
-        outer_layout.addWidget(new_deck_btn)
+        new_layout = QtWidgets.QHBoxLayout()
+        new_layout.addStretch()
+        new_layout.addWidget(new_deck_btn)
+        new_layout.addStretch()
+        new_widget = QtWidgets.QWidget()
+        new_widget.setLayout(new_layout)
+        outer_layout.addWidget(new_widget)
 
-        self.window().action_new_deck.setVisible(True)
+        self.window().action_create_deck.setVisible(True)
         self.window().action_export_deck.setVisible(True)
         self.window().action_import_deck.setVisible(True)
         self.window().action_reset_deck.setVisible(True)
@@ -57,20 +65,37 @@ class HomeWidget(QtWidgets.QWidget):
             label.setFixedWidth(400)
             font = label.font()
             font.setPointSize(12)
+            font.setBold(True)
             label.setFont(font)
             label.setToolTip('Double click to rename')
             horizontal_layout.addWidget(label)
+
+            new_label = QtWidgets.QLabel()
+            new_label.setToolTip('New cards')
+            new_label.setFixedWidth(32)
+            new_label.setAlignment(QtCore.Qt.AlignCenter)
+            font = new_label.font()
+            font.setPointSize(12)
+            new_label.setFont(font)
+            horizontal_layout.addWidget(new_label)
+            today_label = QtWidgets.QLabel()
+            today_label.setToolTip('Cards to repeat today')
+            today_label.setFixedWidth(32)
+            today_label.setAlignment(QtCore.Qt.AlignCenter)
+            font = today_label.font()
+            font.setPointSize(12)
+            today_label.setFont(font)
+            horizontal_layout.addWidget(today_label)
+
             study_btn = QtWidgets.QPushButton(
                 QtGui.QIcon(f'{config.ICONS_DIR}book-open.png'), '')
             study_btn.setFixedWidth(32)
             study_btn.setToolTip('Study deck')
-            study_btn.released.connect(lambda d=deck_name: self.study_deck(d))
             horizontal_layout.addWidget(study_btn)
             edit_btn = QtWidgets.QPushButton(
                 QtGui.QIcon(f'{config.ICONS_DIR}pencil.png'), '')
             edit_btn.setFixedWidth(32)
             edit_btn.setToolTip('Edit deck')
-            edit_btn.released.connect(lambda d=deck_name: self.edit_deck(d))
             delete_btn = QtWidgets.QPushButton(
                 QtGui.QIcon(f'{config.ICONS_DIR}cross.png'), '')
             delete_btn.setFixedWidth(32)
@@ -81,7 +106,40 @@ class HomeWidget(QtWidgets.QWidget):
             horizontal_layout.addWidget(edit_btn)
             horizontal_layout.addWidget(delete_btn)
             self._inner_layout.addWidget(frame)
+
+            try:
+                d = deck.Deck.load(
+                    f'{config.DECKS_DIR}{deck_name}/{config.DECK_FILE}')
+            except OSError:
+                label.setDisabled(True)
+                label.setToolTip('This deck is corrupt')
+                new_label.setText('-')
+                today_label.setText('-')
+                study_btn.setDisabled(True)
+                edit_btn.setDisabled(True)
+            except pickle.UnpicklingError:
+                label.setDisabled(True)
+                label.setToolTip('This deck is corrupt')
+                new_label.setText('-')
+                today_label.setText('-')
+                study_btn.setDisabled(True)
+                edit_btn.setDisabled(True)
+            else:
+                new_label.setText(str(d.new_count()))
+                today_label.setText(str(d.today_count()))
+                study_btn.released.connect(lambda d=d: self.study_deck(d))
+                edit_btn.released.connect(lambda d=d: self.edit_deck(d))
+
         self._scroll_area.setWidget(self._scroll_area_widget_contents)
+
+        if self._inner_layout.count() == 0:
+            self.window().action_export_deck.setDisabled(True)
+            self.window().action_reset_deck.setDisabled(True)
+            self.window().action_delete_deck.setDisabled(True)
+        else:
+            self.window().action_export_deck.setEnabled(True)
+            self.window().action_reset_deck.setEnabled(True)
+            self.window().action_delete_deck.setEnabled(True)
 
     def create_deck(self) -> None:
         dlg = NameDeckDialog(is_new_deck=True, parent=self.window())
@@ -89,15 +147,11 @@ class HomeWidget(QtWidgets.QWidget):
             d = deck.Deck(dlg.deck_name)
             editor_widget.EditorWidget(d, parent=self.window())
 
-    def edit_deck(self, name: str) -> None:
-        d = deck.Deck.load(f'{config.DECKS_DIR}{name}/'
-                           + config.DECK_FILE)
+    def edit_deck(self, d: str) -> None:
         editor_widget.EditorWidget(d, parent=self.window())
 
-    def study_deck(self, name: str) -> None:
-        study_widget.StudyWidget(deck.Deck.load(
-            f'{config.DECKS_DIR}{name}/{config.DECK_FILE}'),
-            parent=self.window())
+    def study_deck(self, d: str) -> None:
+        study_widget.StudyWidget(d, parent=self.window())
 
     def reset_deck(self) -> None:
         dlg = SelectDeckDialog('reset', self)
@@ -114,7 +168,7 @@ class HomeWidget(QtWidgets.QWidget):
             f'{config.DECKS_DIR}{deck_name}/{config.DECK_FILE}')
         d.reset()
         d.dump()
-        # self.populate_list()
+        self.populate_list()
 
     def delete_deck(self, deck_name: str = None) -> None:
         if deck_name is None:
@@ -126,9 +180,7 @@ class HomeWidget(QtWidgets.QWidget):
                 f'Are you sure you want to delete {repr(deck_name)} deck?') \
                 == QtWidgets.QMessageBox.No:
             return
-        d = deck.Deck.load(
-            f'{config.DECKS_DIR}{deck_name}/{config.DECK_FILE}')
-        d.delete()
+        shutil.rmtree(f'{config.DECKS_DIR}{deck_name}')
         self.populate_list()
 
     def export_deck(self) -> None:
@@ -136,7 +188,10 @@ class HomeWidget(QtWidgets.QWidget):
         if not dialog.exec():
             return
         deck_name = dialog.deck_name
+        reset = dialog.is_checked
         directory = QtWidgets.QFileDialog.getExistingDirectory(self.window())
+        if not directory:
+            return
         path = f'{directory}/{deck_name}.tar'
         if os.access(path, os.F_OK) and QtWidgets.QMessageBox.question(
                 self.window(), 'File already exists',
@@ -146,21 +201,22 @@ class HomeWidget(QtWidgets.QWidget):
             return
         d = deck.Deck.load(
             f'{config.DECKS_DIR}{deck_name}/{config.DECK_FILE}')
-        d.export(path)
+        d.export(path, reset)
 
     def import_deck(self) -> None:
         file_name = QtWidgets.QFileDialog.getOpenFileName(
             parent=self.window(), filter='Archive (*.tar)')[0]
         try:
             with tarfile.open(file_name) as tar:
-                if os.access(f'{config.DECKS_DIR}{tar.getnames()[0]}',
-                             os.F_OK) \
-                    and QtWidgets.QMessageBox.question(
-                        self.window(), 'Deck already exists',
-                        f'A deck called {repr(tar.getnames()[0])} already '
-                        + 'exists. Do you want to overwrite it?') \
-                        == QtWidgets.QMessageBox.No:
-                    return
+                if os.access(f'{config.DECKS_DIR}{tar.getnames()[0]}', os.F_OK):
+                    if QtWidgets.QMessageBox.question(
+                            self.window(), 'Deck already exists',
+                            f'A deck called {repr(tar.getnames()[0])} already '
+                            + 'exists. Do you want to overwrite it?') \
+                            == QtWidgets.QMessageBox.No:
+                        return
+                    else:
+                        shutil.rmtree(f'{config.DECKS_DIR}{tar.getnames()[0]}')
                 tar.extractall(config.DECKS_DIR)
         except ValueError:
             pass
@@ -198,7 +254,8 @@ class NameDeckDialog(QtWidgets.QDialog):
         self.setLayout(layout)
 
         self._syntax_error_label = QtWidgets.QLabel(
-            'The only permitted characters are a-z, A-Z, 0-9 and _')
+            "A deck's name cannot be empty\n"
+            "The only permitted characters are a-z, A-Z, 0-9 and _")
         self._syntax_error_label.setStyleSheet("color: #ff0000")
         layout.addWidget(self._syntax_error_label)
         self._syntax_error_label.hide()
@@ -247,6 +304,12 @@ class SelectDeckDialog(QtWidgets.QDialog):
             self._combo_box.addItem(deck_name)
         layout.addWidget(self._combo_box)
 
+        self._action = action
+        if action == 'export':
+            self._check_box = QtWidgets.QCheckBox(
+                'Exclude scheduling information')
+            layout.addWidget(self._check_box)
+
         q_btn = QtWidgets.QDialogButtonBox.Ok \
             | QtWidgets.QDialogButtonBox.Cancel
         button_box = QtWidgets.QDialogButtonBox(q_btn, parent=self)
@@ -257,3 +320,5 @@ class SelectDeckDialog(QtWidgets.QDialog):
     def accept(self, *args, **kwargs) -> None:
         super().accept()
         self.deck_name = self._combo_box.currentText()
+        if self._action == 'export':
+            self.is_checked = self._check_box.isChecked()

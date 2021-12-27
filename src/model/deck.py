@@ -126,14 +126,37 @@ class Deck:
     def reset(self) -> None:
         self._new_queue = collections.deque(self.cards)
         self._queues = [collections.deque()]
-        self._cards_strengths = [1 for _ in self.cards]
+        self._cards_strengths = {c.identifier: 1 for c in self.cards}
 
     def delete(self) -> None:
         shutil.rmtree(f'{config.DECKS_DIR}{self.name}')
 
-    def export(self, file_name: str) -> None:
+    def export(self, file_name: str, reset: bool) -> None:
+        if reset:
+            self.reset()
+            try:
+                shutil.rmtree(f'{config.TEMP_DIR}{self.name}')
+            except FileNotFoundError:
+                pass
+            shutil.copytree(f'{config.DECKS_DIR}{self.name}',
+                            f'{config.TEMP_DIR}{self.name}')
+            with open(f'{config.TEMP_DIR}{self.name}/{config.DECK_FILE}',
+                      'wb') as f:
+                pickle.dump(self, f)
+            tar_dir = config.TEMP_DIR
+        else:
+            tar_dir = config.DECKS_DIR
+
         with tarfile.open(file_name, 'w') as tar:
-            tar.add(f'{config.DECKS_DIR}{self.name}', self.name)
+            tar.add(f'{tar_dir}{self.name}', self.name)
+        if reset:
+            shutil.rmtree(f'{config.TEMP_DIR}{self.name}')
+
+    def new_count(self):
+        return len(self._new_queue)
+
+    def today_count(self):
+        return len(self._queues[0])
 
 
 class EmptyQueuesException(Exception):
