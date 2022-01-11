@@ -254,15 +254,14 @@ class NameDeckDialog(QtWidgets.QDialog):
         self.setLayout(layout)
 
         self._syntax_error_label = QtWidgets.QLabel(
-            "A deck's name cannot be empty\n"
-            "The only permitted characters are a-z, A-Z, 0-9 and _")
-        self._syntax_error_label.setStyleSheet("color: #ff0000")
+            'The only permitted characters are a-z, A-Z, 0-9 and _')
+        self._syntax_error_label.setStyleSheet('color: #ff0000')
         layout.addWidget(self._syntax_error_label)
         self._syntax_error_label.hide()
 
         self._exist_error_label = QtWidgets.QLabel(
             'Two decks cannot have the same name')
-        self._exist_error_label.setStyleSheet("color: #ff0000")
+        self._exist_error_label.setStyleSheet('color: #ff0000')
         layout.addWidget(self._exist_error_label)
         self._exist_error_label.hide()
 

@@ -1,6 +1,6 @@
 ifeq ($(OS),Windows_NT)
 	pathsep = ;
-	options = --onefile --windowed
+	options = --windowed
 else
 	pathsep = :
 	UNAME := $(shell uname)

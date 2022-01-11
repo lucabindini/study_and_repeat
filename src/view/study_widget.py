@@ -1,7 +1,7 @@
 from PyQt5 import QtWidgets, QtGui, QtCore
 
 from model import deck
-from view import home_widget, secondary_widget
+from view import secondary_widget, end_study_widget
 import config
 
 
@@ -72,8 +72,8 @@ class StudyWidget(secondary_widget.SecondaryWidget):
             self._current_card = self._deck.get_card()
         except deck.EmptyQueuesException:
             self._deck.dump()
-            self.window().setCentralWidget(home_widget.HomeWidget(
-                parent=self.window()))
+            self.window().setCentralWidget(end_study_widget.EndStudyWidget(
+                d=self._deck, parent=self.window()))
         else:
             self._question_text.setText(self._current_card.question)
             self._answer_text.setDisabled(True)
@@ -84,6 +84,7 @@ class StudyWidget(secondary_widget.SecondaryWidget):
     def show_answer(self) -> None:
         self._show_widget.hide()
         self._correctness_btns.show()
+        self._answer_text.setPlaceholderText('')
         self._answer_text.setText(self._current_card.get_answer())
         self._answer_text.setEnabled(True)
 
