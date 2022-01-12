@@ -22,7 +22,21 @@ dist/study_and_repeat : src/*.py src/*/*.py
 	  --add-data 'src/img/favicon.ico$(pathsep)src/img' \
 	  src/study_and_repeat.py
 
-.PHONY : clean
+requirements.txt : FORCE
+	python -m pip freeze >requirements.txt
+FORCE :
+
+install :
+	python3 -m venv env
+	. env/bin/activate ; python -m pip install -r requirements.txt
+ifeq ($(UNAME),Darwin)
+	curl --output fugue-icons-3.5.6.zip https://p.yusukekamiyamane.com/icons/downloads/fugue-icons-3.5.6.zip
+else
+	wget https://p.yusukekamiyamane.com/icons/downloads/fugue-icons-3.5.6.zip
+endif
+	unzip -d src/img/fugue-icons-3.5.6 fugue-icons-3.5.6.zip
+	rm fugue-icons-3.5.6.zip
+
 clean :
 ifeq ($(OS),Windows_NT)
 	-rmdir /s /q build dist
@@ -30,3 +44,5 @@ ifeq ($(OS),Windows_NT)
 else
 	rm -rf build dist ./*.spec
 endif
+
+.PHONY : clean install
