@@ -9,7 +9,7 @@ Download the file for your operating system from [latest release](https://github
 Alternatively, if you want to build the application on your own, follow the instructions in the [Build](#build) section.
 
 ## Build
-Clone the repository in a directory of your choice:
+Clone the repository in a directory of your choice(required `git`):
 ```sh
 git clone https://github.com/lucabindini/study_and_repeat 
 ```

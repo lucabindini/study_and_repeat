@@ -97,9 +97,10 @@ class Deck:
     def calculate_delay(self, correctness: bool) -> None:
         c = (self._new_queue if self._is_new else self._queues[0]).popleft()
 
+        self._is_new = not self._is_new
         # to avoid asking the same question twice in a row
-        if self._queues[0]:
-            self._is_new = not self._is_new
+        if not self._queues[0]:
+            self._is_new = True
 
         if correctness:
             while len(self._queues) <= self._cards_strengths[c.identifier]:
