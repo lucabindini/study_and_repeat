@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "Study and Repeat"
-#define MyAppVersion "1.0"
+#define MyAppVersion "1.3"
 #define MyAppPublisher "Marco Benelli, Luca Bindini"
 #define MyAppURL "https://github.com/lucabindini/study_and_repeat"
 #define MyAppExeName "study_and_repeat.exe"

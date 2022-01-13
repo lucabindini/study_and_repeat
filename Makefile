@@ -1,13 +1,18 @@
 ifeq ($(OS),Windows_NT)
 	pathsep = ;
 	options = --windowed
+	wget = Invoke-WebRequest -OutFile
+	unzip = Expand-Archive -DestinationPath
 else
 	pathsep = :
 	UNAME := $(shell uname)
+	unzip = unzip -d
 	ifeq ($(UNAME),Darwin)
 		options = --windowed --name 'Study and Repeat'
+		wget = curl --output
 	else
 		options = --onefile
+		wget = wget --output-document
 	endif
 endif
 
@@ -27,14 +32,9 @@ requirements.txt : FORCE
 FORCE :
 
 install :
-	python3 -m venv env
-	. env/bin/activate ; python -m pip install -r requirements.txt
-ifeq ($(UNAME),Darwin)
-	curl --output fugue-icons-3.5.6.zip https://p.yusukekamiyamane.com/icons/downloads/fugue-icons-3.5.6.zip
-else
-	wget https://p.yusukekamiyamane.com/icons/downloads/fugue-icons-3.5.6.zip
-endif
-	unzip -d src/img/fugue-icons-3.5.6 fugue-icons-3.5.6.zip
+	python -m pip install --requirement requirements.txt
+	$(wget) fugue-icons-3.5.6.zip https://p.yusukekamiyamane.com/icons/downloads/fugue-icons-3.5.6.zip
+	$(unzip) src/img/fugue-icons-3.5.6 fugue-icons-3.5.6.zip
 	rm fugue-icons-3.5.6.zip
 
 clean :

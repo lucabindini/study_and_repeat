@@ -78,7 +78,7 @@ class MainWindow(QtWidgets.QMainWindow):
         QtWidgets.QMessageBox.about(
             self, 'About Study and Repeat',
             '<h2>Study and Repeat</h2>'
-            '<p>Version 1.0</p>'
+            '<p>Version 1.3</p>'
             '<p>Study and Repeat is an application aimed at improving the '
             'quality of the study, through the technique of spaced repetition.'
             '</p>'

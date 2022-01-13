@@ -8,27 +8,47 @@ The entire development phase of the application and other information about it a
 Download the file for your operating system from [latest release](https://github.com/lucabindini/study_and_repeat/releases/latest).
 Alternatively, if you want to build the application on your own, follow the instructions in the [Build](#build) section.
 
+## Requirements
+These are the requirements in case you want to build the application, they are not needed in case you just want to run the release.
+
+program |GNU/Linux   |Windows     |macOS
+--------|------------|------------|------------
+`python`|required    |required    |required
+`make`  |recommended |recommended |recommended
+`git`   |recommended |recommended |recommended
+`zip`   |preinstalled|not required|recommended
+
+
 ## Build
-Clone the repository in a directory of your choice(required `git`):
+
+Clone the repository in a directory of your choice:
 ```sh
 git clone https://github.com/lucabindini/study_and_repeat 
 ```
+
 Open `study_and_repeat` project folder:
 ```sh
 cd study_and_repeat
 ```
 
-Create virtual environment and install all dependencies in it (required `make` and `zip`):
+Create and activate a virtual environment (this step is optional and can be done in many different ways, e. g. you might want to use `conda`).
+On Unix-like systems, you could do it like this:
+```sh
+python3 -m venv env
+. env/bin/activate
+```
+On Windows PowerShell, you could do it like this:
+```powershell
+python -m venv env
+.\env\Scripts\Activate.ps1
+```
+
+Install the library and icons dependencies:
 ```sh
 make install
 ```
 
-Activate the environment:
-```sh
-. env/bin/activate
-```
-
-Build the application (the output will be in `dist`):
+Build the application, the output will be in `dist`:
 ```sh
 make
 ```
